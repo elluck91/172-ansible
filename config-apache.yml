@@ -1,0 +1,21 @@
+---
+- hosts: webserver
+  connection: ssh
+  remote_user: Ubuntu
+  sudo: true
+  gather_facts: yes
+  tasks:
+    - name: install apache2
+      apt: name=apache2 update_cache=yes state=latest
+
+    - name: enabled mod_rewrite
+      apache2_module: name=rewrite state=present
+      notify:
+        - restart apache2
+
+    - name: copy html file
+      copy: src=~/Desktop/spring18/CMPE172/hello.html dest=/var/www/html/index.html
+
+  handlers:
+    - name: restart apache2
+      service: name=apache2 state=restarted
