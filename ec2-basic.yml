@@ -15,7 +15,21 @@
 
     # Task that will be used to Launch/Create an EC2 Instance
     tasks:
+      - name: Get python3
+        apt: pkg=python3 state=present
 
+      - name: Install pip
+        become: true
+        become_method: sudo
+        become_user: root
+        apt: name=python3-pip update_cache=yes state=latest
+
+      - name: Install boto
+        pip:
+          name: boto      
+      - name: Install boto3
+        pip:
+          name: boto3
       - name: Create a security group
         local_action: 
           module: ec2_group

@@ -14,7 +14,7 @@
         - restart apache2
 
     - name: copy html file
-      copy: src=~/Desktop/spring18/CMPE172/hello.html dest=/var/www/html/index.html
+      copy: src=~/172-ansible/hello.html dest=/var/www/html/index.html
 
   handlers:
     - name: restart apache2

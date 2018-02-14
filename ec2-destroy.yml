@@ -1,55 +1,44 @@
 ---
-# - hosts: webserver
-#   gather_facts: True
-#   user: ubuntu
-#   sudo: True
-#   tasks:
-
-#     # fetch instance data from the metadata servers in ec2
-#     - ec2_facts:
-
-#     # just show the instance-id
-#     - debug: msg= "{{ hostvars[inventory_hostname]['ansible_ec2_instance_id'] }}"
-
-# - hosts: webserver
-#   gather_facts: False
-#   connection: local
-#   vars: 
-#     - region: 'us-east-1'
-#   tasks:
-#     - name: Gather EC2 facts
-#       local_action: ec2_facts
- 
-#     - debug: var=ec2_info
-
-#     - name: Terminate instances 
-#       local_action: ec2
-#         state='absent'
-#         instance_ids='{{ ec2.id }}'
-#         region='{{ region }}'
-#         wait=True
-
 - hosts: webserver
   gather_facts: False
-  connection: ssh
+  connection: local
   tasks:
+
+    - name: Get python3
+      apt: pkg=python3 state=present
+
+    - name: Install pip
+      become: true
+      become_method: sudo
+      become_user: root
+      apt: name=python3-pip update_cache=yes state=latest
+    - name: Install boto
+      pip:
+        name: boto      
+    - name: Install boto3
+      pip:
+        name: boto3
+  
     - name: EC2 Facts
       ec2_instance_facts:
         region: us-west-2
-        #filters:
-          #"tag:Type": "staging"
         aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
         aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
       register: ec2
 
-    - debug: var=ec2
+#    - name: Debug
+#      debug:
+#        msg: "{{ ec2 }}"
+#    - name: Debugging
+#      debug:
+#        msg: "{{ ec2.instances[0].instance_id }}"
 
     - name: Kill EC2 Instance
       ec2:
         state: 'absent'
         region: us-west-2
         keypair: lukasz_sjsu
-        instance_ids: "{{ ec2.instances[0].instance_id}}"
+        instance_ids: "{{ ec2.instances[0].instance_id }}"
         wait: True
         aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
         aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
